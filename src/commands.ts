@@ -7,7 +7,7 @@ import {
 } from "./timer";
 import { parseDurationStr } from "./utils";
 const statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
-let { duration = 30 } = workspace.getConfiguration("ie55timer");
+let { duration = 30 } = workspace.getConfiguration("il55timer");
 const requestDuration = async () => {
   const results = await window.showInputBox({
     placeHolder:
@@ -31,7 +31,7 @@ const restartTimer = () => {
 };
 export function makeCommands() {
   const startCmd = commands.registerCommand(
-    "ie55-timer.startTimer",
+    "il55-timer.startTimer",
     async () => {
       if (isTimerRunning()) {
         window.showErrorMessage("Timer is already running");
@@ -42,19 +42,19 @@ export function makeCommands() {
       restartTimer();
     }
   );
-  const stopCmd = commands.registerCommand("ie55-timer.stopTimer", () => {
+  const stopCmd = commands.registerCommand("il55-timer.stopTimer", () => {
     stopTimer();
   });
-  const restartCmd = commands.registerCommand("ie55-timer.restartTimer", () => {
+  const restartCmd = commands.registerCommand("il55-timer.restartTimer", () => {
     restartTimer();
   });
-  const pauseCmd = commands.registerCommand("ie55-timer.pauseTimer", () => {
+  const pauseCmd = commands.registerCommand("il55-timer.pauseTimer", () => {
     pauseTimer();
   });
-  const hideCmd = commands.registerCommand("ie55-timer.hideTimer", () => {
+  const hideCmd = commands.registerCommand("il55-timer.hideTimer", () => {
     statusBarItem.hide();
   });
-  const showCmd = commands.registerCommand("ie55-timer.showTimer", () => {
+  const showCmd = commands.registerCommand("il55-timer.showTimer", () => {
     statusBarItem.show();
   });
   statusBarItem.show();

@@ -1,6 +1,6 @@
 {
-  "name": "ie55-timer",
-  "displayName": "ie55-timer",
+  "name": "il55-timer",
+  "displayName": "il55-timer",
   "description": "timer",
   "version": "0.0.1",
   "engines": {
@@ -17,7 +17,7 @@
     "configuration": {
       "title": "TypeScript",
       "properties": {
-        "ie55timer.duration": {
+        "il55timer.duration": {
           "type": "number",
           "default": 30,
           "description": "Default time for starting a timer"
@@ -26,27 +26,27 @@
     },
     "commands": [
       {
-        "command": "ie55-timer.startTimer",
+        "command": "il55-timer.startTimer",
         "title": "Start Timer"
       },
       {
-        "command": "ie55-timer.pauseTimer",
+        "command": "il55-timer.pauseTimer",
         "title": "Pause Timer"
       },
       {
-        "command": "ie55-timer.stopTimer",
+        "command": "il55-timer.stopTimer",
         "title": "Stop Timer"
       },
       {
-        "command": "ie55-timer.restartTimer",
+        "command": "il55-timer.restartTimer",
         "title": "Restart Timer"
       },
       {
-        "command": "ie55-timer.showTimer",
+        "command": "il55-timer.showTimer",
         "title": "Show Timer"
       },
       {
-        "command": "ie55-timer.hideTimer",
+        "command": "il55-timer.hideTimer",
         "title": "Hide Timer"
       }
     ]
