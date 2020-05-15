@@ -6,6 +6,7 @@ import {
   stopTimer as _stopTimer,
   toggleTimer,
   resumeTimer,
+  isTimerPaused,
 } from "./timer";
 import { parseDurationStr } from "./utils";
 const statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
@@ -18,7 +19,15 @@ const requestDuration = async () => {
   return results ? parseDurationStr(results) : 0;
 };
 const updateStatusBar = (time: string) => {
-  statusBarItem.text = time;
+  let icon: string;
+  if (isTimerRunning()) {
+    icon = "debug-start";
+  } else if (isTimerPaused()) {
+    icon = "debug-pause";
+  } else {
+    icon = "debug-stop";
+  }
+  statusBarItem.text = `$(${icon}) ${time}`;
 };
 const stopTimer = () => {
   _stopTimer();

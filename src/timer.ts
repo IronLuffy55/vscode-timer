@@ -15,18 +15,21 @@ enum State {
 let duration: number = 0; //seconds
 let interval: NodeJS.Timeout;
 let state: State = State.Idle;
-let _onChange: (time: string) => void;
+let _onChange: () => void;
 let _onEnd: () => void;
 //#endregion
 function isTimerRunning() {
   return state === State.Running;
+}
+function isTimerPaused() {
+  return state === State.Paused;
 }
 function startTimer(duration: number, { onChange, onEnd }: EventHandlers) {
   if (state === State.Running) {
     throw new Error("Timer is already running");
   }
   state = State.Running;
-  _onChange = onChange;
+  _onChange = () => onChange(getFormattedDuration());
   _onEnd = onEnd;
   setDuration(duration);
   startInterval();
@@ -38,12 +41,15 @@ function stopTimer() {
   state = State.Stopped;
   duration = 0;
   stopInterval();
+  _onChange();
+  _onEnd();
 }
 function pauseTimer() {
   if (state !== State.Running) {
     return;
   }
   state = State.Paused;
+  _onChange();
   stopInterval();
 }
 function resumeTimer() {
@@ -67,10 +73,9 @@ function toggleTimer() {
 }
 function startInterval() {
   interval = setInterval(() => {
-    _onChange(getFormattedDuration());
+    _onChange();
     if (duration <= 0) {
       stopTimer();
-      _onEnd();
     } else {
       duration -= 1;
     }
@@ -95,4 +100,5 @@ export {
   getFormattedDuration,
   resumeTimer,
   toggleTimer,
+  isTimerPaused,
 };
