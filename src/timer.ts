@@ -1,4 +1,5 @@
 import { formatDuration } from "./utils";
+//#region types
 interface EventHandlers {
   onChange: (time: string) => void;
   onEnd: () => void;
@@ -9,13 +10,14 @@ enum State {
   Paused,
   Idle,
 }
-
+//#endregion
+//#region private variables
 let duration: number = 0; //seconds
 let interval: NodeJS.Timeout;
 let state: State = State.Idle;
 let _onChange: (time: string) => void;
 let _onEnd: () => void;
-
+//#endregion
 function isTimerRunning() {
   return state === State.Running;
 }
@@ -51,10 +53,19 @@ function resumeTimer() {
   state = State.Running;
   startInterval();
 }
-function startInterval() {
-  if (state === State.Running) {
-    return;
+function toggleTimer() {
+  switch (state) {
+    case State.Running:
+      pauseTimer();
+      break;
+    case State.Paused:
+      resumeTimer();
+      break;
+    default:
+    //do nothing
   }
+}
+function startInterval() {
   interval = setInterval(() => {
     _onChange(getFormattedDuration());
     if (duration <= 0) {
@@ -83,4 +94,5 @@ export {
   setDuration,
   getFormattedDuration,
   resumeTimer,
+  toggleTimer,
 };

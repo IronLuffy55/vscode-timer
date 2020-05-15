@@ -4,6 +4,8 @@ import {
   isTimerRunning,
   pauseTimer,
   stopTimer as _stopTimer,
+  toggleTimer,
+  resumeTimer,
 } from "./timer";
 import { parseDurationStr } from "./utils";
 const statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
@@ -57,6 +59,23 @@ export function makeCommands() {
   const showCmd = commands.registerCommand("il55-timer.showTimer", () => {
     statusBarItem.show();
   });
+  const toggleCmd = commands.registerCommand("il55-timer.toggleTimer", () => {
+    toggleTimer();
+  });
+  const resumeCmd = commands.registerCommand("il55-timer.resumeTimer", () => {
+    resumeTimer();
+  });
+  statusBarItem.command = "il55-timer.toggleTimer";
   statusBarItem.show();
-  return [startCmd, hideCmd, showCmd, pauseCmd, stopCmd, restartCmd];
+
+  return [
+    startCmd,
+    hideCmd,
+    showCmd,
+    pauseCmd,
+    stopCmd,
+    restartCmd,
+    toggleCmd,
+    resumeCmd,
+  ];
 }

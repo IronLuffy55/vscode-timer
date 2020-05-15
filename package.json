@@ -12,6 +12,7 @@
   "activationEvents": [
     "*"
   ],
+  "publisher": "il55",
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
@@ -48,6 +49,14 @@
       {
         "command": "il55-timer.hideTimer",
         "title": "Hide Timer"
+      },
+      {
+        "command": "il55-timer.toggleTimer",
+        "title": "Toggle Timer"
+      },
+      {
+        "command": "il55-timer.resumeTimer",
+        "title": "Resume Timer"
       }
     ]
   },
