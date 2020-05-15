@@ -64,3 +64,13 @@ export const parseDurationStr = (input: string): number => {
     return parts.reduce((sum, part) => sum + parseDurationStr(part), 0);
   }
 };
+export function formatDuration(durationInSecs: number) {
+  function addZero(time: number) {
+    return time < 10 ? `0${time}` : time;
+  }
+  const hours = Math.floor(durationInSecs / 3600);
+  const minutes = Math.floor((durationInSecs % 3600) / 60);
+  const seconds = Math.floor(durationInSecs % 60);
+
+  return `${addZero(hours)}:${addZero(minutes)}:${addZero(seconds)}`;
+}
