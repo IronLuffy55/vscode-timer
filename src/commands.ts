@@ -76,7 +76,7 @@ export function makeCommands() {
   });
   statusBarItem.command = "il55-timer.toggleTimer";
   statusBarItem.show();
-
+  updateStatusBar("00:00:00");
   return [
     startCmd,
     hideCmd,
