@@ -20,8 +20,8 @@
       "properties": {
         "il55timer.duration": {
           "type": "number",
-          "default": 30,
-          "description": "Default time for starting a timer"
+          "default": 1800,
+          "description": "Default duration (in seconds) for new timers"
         }
       }
     },

@@ -10,7 +10,7 @@ import {
 } from "./timer";
 import { parseDurationStr } from "./utils";
 const statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
-let { duration = 30 } = workspace.getConfiguration("il55timer");
+let { duration = 1800 } = workspace.getConfiguration("il55timer");
 const requestDuration = async () => {
   const results = await window.showInputBox({
     placeHolder:
