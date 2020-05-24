@@ -1,66 +1,86 @@
-import { commands, workspace, window, StatusBarAlignment } from "vscode";
 import {
-  startTimer,
-  isTimerRunning,
-  pauseTimer,
-  stopTimer as _stopTimer,
-  toggleTimer,
-  resumeTimer,
-  isTimerPaused,
-} from "./timer";
+  commands,
+  workspace,
+  window,
+  StatusBarAlignment,
+  StatusBarItem,
+} from "vscode";
+import Timer, { State as TimerState } from "./timer";
 import { parseDurationStr } from "./utils";
-const statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
-let { duration = 1800 } = workspace.getConfiguration("il55timer");
 const requestDuration = async () => {
   const results = await window.showInputBox({
     placeHolder:
       "Enter duration. Add [h|m|s] to number to specify unit. Default is minutes",
   });
-  return results ? parseDurationStr(results) : 0;
+  return results
+    ? parseDurationStr(results)
+    : workspace.getConfiguration("il55timer").duration;
 };
-const updateStatusBar = (time: string) => {
-  let icon: string;
-  if (isTimerRunning()) {
-    icon = "debug-start";
-  } else if (isTimerPaused()) {
-    icon = "debug-pause";
-  } else {
-    icon = "debug-stop";
+export class TimerStatusBarItem {
+  private statusBarItem: StatusBarItem;
+  constructor({
+    initialText = "00:00:00",
+    command,
+  }: {
+    initialText?: string;
+    command?: string;
+  }) {
+    this.statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
+    this.statusBarItem.text = initialText;
+    this.statusBarItem.command = command;
+    this.statusBarItem.show();
   }
-  statusBarItem.text = `$(${icon}) ${time}`;
-};
-const stopTimer = () => {
-  _stopTimer();
-  updateStatusBar("00:00:00");
-};
-const restartTimer = () => {
-  stopTimer();
-  startTimer(duration, {
-    onChange: updateStatusBar,
+  show() {
+    this.statusBarItem.show();
+  }
+  hide() {
+    this.statusBarItem.hide();
+  }
+  update(state: TimerState, timeLeft: string) {
+    let icon;
+    switch (state) {
+      case TimerState.Running:
+        icon = "debug-start";
+        break;
+      case TimerState.Paused:
+        icon = "debug-pause";
+        break;
+      default:
+        icon = "debug-stop";
+    }
+    this.statusBarItem.text = `$(${icon}) ${timeLeft}`;
+  }
+}
+export function makeCommands() {
+  const statusBarItem = new TimerStatusBarItem({
+    command: "il55-timer.toggleTimer",
+  });
+  const timer = new Timer({
+    onChange: (timeLeft: string) => {
+      statusBarItem.update(timer.state, timeLeft);
+    },
     onEnd: () => window.showInformationMessage("Session is done"),
   });
-};
-export function makeCommands() {
+
   const startCmd = commands.registerCommand(
     "il55-timer.startTimer",
     async () => {
-      if (isTimerRunning()) {
+      if (timer.isRunning) {
         window.showErrorMessage("Timer is already running");
         return;
       }
-      const newDuration = await requestDuration();
-      newDuration && (duration = newDuration);
-      restartTimer();
+      const duration = await requestDuration();
+      timer.start(duration);
     }
   );
   const stopCmd = commands.registerCommand("il55-timer.stopTimer", () => {
-    stopTimer();
+    timer.stop();
   });
   const restartCmd = commands.registerCommand("il55-timer.restartTimer", () => {
-    restartTimer();
+    timer.restart();
   });
   const pauseCmd = commands.registerCommand("il55-timer.pauseTimer", () => {
-    pauseTimer();
+    timer.pause();
   });
   const hideCmd = commands.registerCommand("il55-timer.hideTimer", () => {
     statusBarItem.hide();
@@ -69,14 +89,15 @@ export function makeCommands() {
     statusBarItem.show();
   });
   const toggleCmd = commands.registerCommand("il55-timer.toggleTimer", () => {
-    toggleTimer();
+    if (!timer.isActive) {
+      timer.restart();
+    } else {
+      timer.toggle();
+    }
   });
   const resumeCmd = commands.registerCommand("il55-timer.resumeTimer", () => {
-    resumeTimer();
+    timer.resume();
   });
-  statusBarItem.command = "il55-timer.toggleTimer";
-  statusBarItem.show();
-  updateStatusBar("00:00:00");
   return [
     startCmd,
     hideCmd,
