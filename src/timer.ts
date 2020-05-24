@@ -1,104 +1,117 @@
 import { formatDuration } from "./utils";
-//#region types
+//#region type defs
 interface EventHandlers {
   onChange: (time: string) => void;
   onEnd: () => void;
 }
-enum State {
+export enum State {
   Running,
   Stopped,
   Paused,
   Idle,
 }
 //#endregion
-//#region private variables
-let duration: number = 0; //seconds
-let interval: NodeJS.Timeout;
-let state: State = State.Idle;
-let _onChange: () => void;
-let _onEnd: () => void;
-//#endregion
-function isTimerRunning() {
-  return state === State.Running;
-}
-function isTimerPaused() {
-  return state === State.Paused;
-}
-function startTimer(duration: number, { onChange, onEnd }: EventHandlers) {
-  if (state === State.Running) {
-    throw new Error("Timer is already running");
-  }
-  state = State.Running;
-  _onChange = () => onChange(getFormattedDuration());
-  _onEnd = onEnd;
-  setDuration(duration);
-  startInterval();
-}
-function stopTimer() {
-  if (![State.Running, State.Paused].includes(state)) {
-    return;
-  }
-  state = State.Stopped;
-  duration = 0;
-  stopInterval();
-  _onChange();
-  _onEnd();
-}
-function pauseTimer() {
-  if (state !== State.Running) {
-    return;
-  }
-  state = State.Paused;
-  _onChange();
-  stopInterval();
-}
-function resumeTimer() {
-  if (state !== State.Paused) {
-    return;
-  }
-  state = State.Running;
-  startInterval();
-}
-function toggleTimer() {
-  switch (state) {
-    case State.Running:
-      pauseTimer();
-      break;
-    case State.Paused:
-      resumeTimer();
-      break;
-    default:
-    //do nothing
-  }
-}
-function startInterval() {
-  interval = setInterval(() => {
-    _onChange();
-    if (duration <= 0) {
-      stopTimer();
-    } else {
-      duration -= 1;
-    }
+//#region timer loop
+let loopId: NodeJS.Timeout;
+function startLoop(callback: () => void) {
+  callback();
+  loopId = setInterval(() => {
+    callback();
   }, 1000);
 }
-function stopInterval() {
-  clearInterval(interval);
+function stopLoop() {
+  clearInterval(loopId);
 }
-function setDuration(secs: number) {
-  duration = secs;
+//#endregion
+export default class Timer {
+  private duration: number = 1800;
+  private secondsLeft: number = 0;
+  private _state: State = State.Idle;
+  private eventHandlers: EventHandlers;
+  constructor(eventHandlers: EventHandlers) {
+    this.eventHandlers = eventHandlers;
+  }
+  start(duration: number) {
+    if (this.isRunning) {
+      throw new Error("Timer is already running");
+    }
+    this.duration = duration;
+    this.secondsLeft = duration;
+    this.runLoop();
+  }
+  stop() {
+    if (!this.isActive) {
+      return;
+    }
+    stopLoop();
+    this.secondsLeft = 0;
+    this.setState(State.Stopped);
+  }
+  pause() {
+    if (!this.isRunning) {
+      return;
+    }
+    stopLoop();
+    this.setState(State.Paused);
+  }
+  resume() {
+    if (!this.isPaused) {
+      return;
+    }
+    this.runLoop();
+  }
+  toggle() {
+    if (!this.isActive) {
+      return;
+    }
+    return this.isRunning ? this.pause() : this.resume();
+  }
+  restart(duration?: number) {
+    this.stop();
+    this.start(duration || this.duration);
+  }
+  private setState(state: State) {
+    if (this.state === state) {
+      return;
+    }
+    this._state = state;
+    this.onChange();
+  }
+  //#region loop methods
+  private runLoop() {
+    if (this.isRunning) {
+      return;
+    }
+    this.setState(State.Running);
+    startLoop(() => {
+      this.onChange();
+      if (this.secondsLeft <= 0) {
+        this.stop();
+        this.onEnd();
+      } else {
+        this.secondsLeft -= 1;
+      }
+    });
+  }
+  //#endregion
+  //#region event handlers
+  private onChange() {
+    this.eventHandlers.onChange(formatDuration(this.secondsLeft));
+  }
+  private onEnd() {
+    this.eventHandlers.onEnd();
+  }
+  //#endregion
+  get state(): State {
+    return this._state;
+  }
+  get isPaused(): Boolean {
+    return this._state === State.Paused;
+  }
+  get isRunning(): Boolean {
+    return this._state === State.Running;
+  }
+  get isActive(): Boolean {
+    return this.isRunning || this.isPaused;
+  }
 }
-function getFormattedDuration() {
-  return formatDuration(duration);
-}
-
-export {
-  isTimerRunning,
-  startTimer,
-  pauseTimer,
-  stopTimer,
-  setDuration,
-  getFormattedDuration,
-  resumeTimer,
-  toggleTimer,
-  isTimerPaused,
-};
